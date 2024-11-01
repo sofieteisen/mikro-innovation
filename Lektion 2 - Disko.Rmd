@@ -1,0 +1,44 @@
+---
+title: "Opgave 0 - Task"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+library(viridis)
+library(zoo)
+library(stringr)
+library(ggrepel)
+library(foreign)
+library(AER)
+library(lmtest)
+library(sandwich)
+library(texreg)
+library(tseries)
+library(timeSeries)
+library(stats)
+library(xts)
+library(mFilter)
+library(urca)
+library(forecast)
+library(strucchange)
+library(Quandl)
+library(tstools)
+library(dynlm)
+library(vars)
+library(lpirfs)
+options(digits = 8)
+options(scipen = 999)
+rm(list=ls())
+```
+
+```{r}
+disko = read_xls("DISKO_mikro5.xls")
+```
+
