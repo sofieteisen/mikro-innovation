@@ -1,0 +1,101 @@
+---
+title: "Opgave 0 - Task"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+library(viridis)
+library(zoo)
+library(stringr)
+library(ggrepel)
+library(foreign)
+library(AER)
+library(lmtest)
+library(sandwich)
+library(texreg)
+library(tseries)
+library(timeSeries)
+library(stats)
+library(xts)
+library(mFilter)
+library(urca)
+library(forecast)
+library(strucchange)
+library(Quandl)
+library(tstools)
+library(dynlm)
+library(vars)
+library(lpirfs)
+options(digits = 8)
+options(scipen = 999)
+rm(list=ls())
+```
+
+```{r, echo=F}
+#Hent datasættet fra csv-filen
+raw.data <- read.csv("TASK_mikro5.csv")
+```
+
+# Opgave 0.A
+```{r, echo=F}
+#Bruger floor-kommandoen til at skære decimalerne væk efter man har divideret med 1000
+new.dat <- raw.data %>%
+  mutate(one.dig=floor(ISCO_NU/1000))
+
+#Det ser ud til (hos Danmarks Statistik), at værdier over 9700 ikke burde eksistere
+#Fjerner værdier over 9700
+new.dat <- new.dat %>%
+    dplyr::filter(ISCO_NU < 9700)
+
+# Divider med antal rækker for at få procent
+table(new.dat$one.dig)/nrow(new.dat)
+```
+Ovenstående er den procentvise fordeling i forskellige jobtyper.
+
+# Opgave 0.B
+```{r, echo=F}
+# Værdien 0 observeres også som er en enkelt værnepligtig der fjernes
+one.dig.table <- as.data.frame(table(new.dat$one.dig)/nrow(new.dat)) %>%
+  dplyr::filter(Var1!=0) %>%
+  rename(one.dig=Var1)
+
+#Indtaster intervalmidtpunkterne fra dagens tekst i en ny variabel, som kaldes pct.auto
+one.dig.table <- one.dig.table %>%
+  mutate(pct.auto=case_when(one.dig==1~7.5,
+                            one.dig==2~10,
+                            one.dig==3~30,
+                            one.dig==4~55,
+                            one.dig==5~30,
+                            one.dig==6~22.5,
+                            one.dig==7~45,
+                            one.dig==8~65,
+                            one.dig==9~47.5))
+
+#Middelværdien for pct auto vægtet efter andele i beskæftigelsen.
+cat("Procentdel jobs der kan automatiseres: ",weighted.mean(one.dig.table$pct.auto,one.dig.table$Freq))
+```
+
+# Opgave 0.C
+
+Der er større sandsynlighed for, at et job vil blive automatiseret, hvis arbejdet består af en mindre mængde opgaver som gentages meget - eller hvis der blot er tale om en opgave der gentages: Citat fra bogen: "Only when jobs are limited to only a handful of tasks (or just one repetitive task) can they be automated. The more complex the job, and the more tasks it involves, the more difficult it is to be automated".
+
+
+# Opgave 0.D
+
+2; industri, råstofindvinding og forsyningsvirksomhed: 
+I dette tilfælde (specielt industri og råstofindvinding) kan der argumenteres for, at der er tale om arbejdsopgaver der gentager sig - derfor må disse ifølge ovenstående svar være oplagte at automatisere. Med hensyn til forsyningsvirksomhed antager vi, at der er tale om virksomheder der eksempelvis producere enkelte dele til andre produkter, hvilket må antages at kunne automatiseres. 
+
+
+5; information og kommunikation
+Her kan der henvises til det AI man ofte støder på i forbindelse med reklamation på varer købt online. Hvor man kommunikere med en AI, som modtager information, behandler dette, og efterfølgende sender det videre til en medarbejder. 
+
+
+4; Handel og transport.
+Her er det mest med fokus på handel - store dele af handelssektoren er blevet automatiseret. Tidligere skulle man i kontakt med medarbejdere for at købe produkter, i dag kan man bestille størstedelen online. Et argument for dette kan være, at man er gået fra at have mange fysiske butikker, til nu at have mere online handel.
