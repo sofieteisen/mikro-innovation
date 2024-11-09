@@ -1,0 +1,170 @@
+---
+title: "Opgave 1 - Lektion 3"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+library(viridis)
+library(zoo)
+library(stringr)
+library(ggrepel)
+library(foreign)
+library(AER)
+library(lmtest)
+library(sandwich)
+library(texreg)
+library(tseries)
+library(timeSeries)
+library(stats)
+library(xts)
+library(mFilter)
+library(urca)
+library(forecast)
+library(strucchange)
+library(Quandl)
+library(tstools)
+library(dynlm)
+options(digits = 8)
+options(scipen = 999)
+rm(list=ls())
+```
+
+```{r, echo = F}
+disko = read_excel("DISKO_mikro5.xls")
+```
+
+
+# Opgave A - spg. 1 af 4
+
+## Redegør for begreberne “innovation” og “produktinnovation”.
+
+Spørgsmål 1:
+Variabel 20: Har virksomheden introduceret nye produkter/ service i perioden.
+Variabel 23: Har virksomheden introduceret ny teknologi
+Variabel 11C: introduktion af ny teknologi
+Graden af innovation: 21; findes produkterne på markederne i Danmark/ resten af verden
+
+Spørgsmål 2:
+Se spørgsmål 20; 51,7 % - radikal hvis man har indført helt nye produkter - se derfor spørgsmål 21; 76,9% er på det danske marked, 78,1% er på verdensmarkedet - der må derfor være tale om trinvis innovation i de fleste tilfælde. 
+
+Måske spørgsmål 23; ny teknologi kan være en del af innovationsprocessen.
+
+
+### Foreslå hvordan produktinnovation kan operationaliseres i DISKO-datasættet.
+
+
+
+### Vælg en operationalisering så hver virksomhed er enten innovativ (1) eller ej (0)
+
+
+
+### Indsæt en tabel der viser hvor mange virksomheder i DISKO-datasættet, der havde produktinnovation i 1993-1995 ifølge jeres definition
+
+```{r, echo = F}
+
+df = as.data.frame(cbind(disko$S20, disko$S21A))
+
+prod_ja = ifelse(disko$S20 == 1, 1, NA) %>%
+  na.omit() # Remove NA values from the result
+prod_nej = ifelse(disko$S20 == 2, 0, NA) %>%
+  na.omit()
+
+
+total_prod_yes <- sum(prod_ja)
+total_prod_no <- length(prod_nej) # This counts 0s
+
+# Create a summary table
+summary_table <- data.frame(Response = c("Yes", "No"), Count = c(total_prod_yes, total_prod_no), Procent = c(total_prod_yes/nrow(disko), total_prod_no/nrow(disko)))
+
+# View the table
+print(summary_table)
+```
+
+```{r, echo = F}
+ikke_similar = ifelse(disko$S21A == 2, 1, NA) %>%
+  na.omit()
+similar_el_noinno = nrow(disko)-length(ikke_similar)
+
+inno_yes <- sum(ikke_similar)
+inno_no <- similar_el_noinno # This counts 0s
+# Create a summary table
+
+summary_table <- data.frame(Response = c("Yes", "No"), Count = c(inno_yes, inno_no), Procent = c(inno_yes/nrow(disko), inno_no/nrow(disko)))
+
+# View the table
+print(summary_table)
+```
+
+
+# Opgave C - spg. 3 af 4
+
+## Test følgende to hypoteser:
+
+▶ Lav en regression. Brug lm() kommandoen i R
+▶ Den afhængige variabel er jeres mål for
+produktinnovation i opgave A
+▶ De forklarende variable er mål for arbejdets organisering
+(variable S6A-S6G p˚a slide 29) og formel uddannelse
+(S16, S18A-S18C p˚a slide 28). Det giver mange
+muligheder. Vælg den I synes er bedst.
+▶ Det er ikke (her) nødvendigt med yderligere forklarende
+variable
+
+### H.1 Arbejdets organisering kan gøre virksomheden mere (produkt)innovativ
+
+▶ S6A: Cross occupational working groups
+▶ S6B: Quality circles/groups
+▶ S6C: Systems for the collection of proposals from
+employees (not quality circles/groups)
+```{r, echo = F}
+#Laver df til regression. Bruger S20 og s6 a,b,c. Hvis de ikke bruger det spørgsmålet går på er værdien nul. <25% = 1, 25-50% = 2, >50% = 3.
+df_h1 = as.data.frame(cbind(disko$S20, disko$S6A, disko$S6B, disko$S6C)) %>%
+  dplyr::filter(!if_any(everything(), ~ . == "NA")) %>%
+  dplyr::filter(!if_any(everything(), ~ . > 4)) %>%
+  mutate(s20 = case_when(V1 == 1 ~ 1, V1 == 2 ~ 0),
+         s6a = case_when(V2 == 4 ~ 0, V2 == 1 ~ 1, V2 == 2 ~ 2, V2 == 3 ~ 3),
+         s6b = case_when(V3 == 4 ~ 0, V3 == 1 ~ 1, V3 == 2 ~ 2, V3 == 3 ~ 3),
+         s6c = case_when(V4 == 4 ~ 0, V4 == 1 ~ 1, V4 == 2 ~ 2, V4 == 3 ~ 3),
+         )
+
+
+#colnames(df_h1) = c("V1", "s6a", "s6b", "s6c", "s20")
+  
+y.reg = lm(s20 ~ as.factor(s6a) + as.factor(s6b) + as.factor(s6c), data = df_h1)
+summary(y.reg)
+```
+
+### H.2 Formel uddannelse kan gøre virksomheden mere (produkt)innovativ
+
+▶ S6A: Cross occupational working groups
+▶ S6B: Quality circles/groups
+▶ S6C: Systems for the collection of proposals from
+employees (not quality circles/groups)
+
+```{r, echo = F}
+#Laver df til regression. Bruger S20 og s6 a,b,c. Hvis de ikke bruger det spørgsmålet går på er værdien nul. <25% = 1, 25-50% = 2, >50% = 3.
+df_h2 = as.data.frame(cbind(disko$S20, disko$S16, disko$S18A, disko$S18B, disko$S18C)) %>%
+  dplyr::filter(!if_any(everything(), ~ . == "NA")) %>%
+  dplyr::filter(!if_any(everything(), ~ . > 3)) %>%
+  mutate(s20 = case_when(V1 == 1 ~ 1, V1 == 2 ~ 0),
+         s16 = case_when(V2 == 1 ~ 0, V2 == 3 ~ 1, V2 == 2 ~ 2),
+         s18a = case_when(V3 == 3 ~ 0, V3 == 1 ~ 1, V3 == 2 ~ 2),
+         s18b = case_when(V4 == 3 ~ 0, V4 == 1 ~ 1, V4 == 2 ~ 2),
+         s18c = case_when(V5 == 3 ~ 0, V5 == 1 ~ 1, V5 == 2 ~ 2)
+         )
+
+
+#colnames(df_h1) = c("V1", "s6a", "s6b", "s6c", "s20")
+  
+y.reg = lm(s20 ~ as.factor(s16) + as.factor(s18b) + as.factor(s18c), data = df_h2)
+summary(y.reg)
+```
+
+
