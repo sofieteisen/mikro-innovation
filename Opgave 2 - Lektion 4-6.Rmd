@@ -1,0 +1,46 @@
+---
+title: "Opgave 2 - Lektion 4-6"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+library(viridis)
+library(zoo)
+library(stringr)
+library(ggrepel)
+library(foreign)
+library(AER)
+library(lmtest)
+library(sandwich)
+library(texreg)
+library(tseries)
+library(timeSeries)
+library(stats)
+library(xts)
+library(mFilter)
+library(urca)
+library(forecast)
+library(strucchange)
+library(Quandl)
+library(tstools)
+library(dynlm)
+options(digits = 8)
+options(scipen = 999)
+rm(list=ls())
+```
+
+```{r, echo = F}
+task = read.csv("TASK_mikro5.csv")
+```
+
+```{r, echo = F}
+task %>%
+```
+
