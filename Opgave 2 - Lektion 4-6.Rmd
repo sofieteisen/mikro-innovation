@@ -40,7 +40,16 @@ rm(list=ls())
 task = read.csv("TASK_mikro5.csv")
 ```
 
+Opgave 1 tabel
 ```{r, echo = F}
 task %>%
+  mutate(ny_tek = ifelse(G1a == 1, 1, 0))
+ny_tek = na.omit(ifelse(task$G1a == 1, 1, 0))
+
+total_tek_yes <- sum(ny_tek)
+total_tek_no <- length(ny_tek)-sum(ny_tek) # This counts 0s
+
+summary_table <- data.frame(Response = c("Yes", "No"), Count = c(total_tek_yes, total_tek_no), Procent = c(total_tek_yes/length(ny_tek), total_tek_no/length(ny_tek)))
+summary_table
 ```
 
