@@ -53,3 +53,28 @@ summary_table <- data.frame(Response = c("Yes", "No"), Count = c(total_tek_yes, 
 summary_table
 ```
 
+
+Test følgende to hypoteser:
+H.1  Arbejdets organisering kan delvist forklare teknologisk forandring i jobs
+H.2  Formel uddannelse kan delvist forklare teknologisk forandring i jobs
+Lav en regression. Brug lm() kommandoen i R
+Den afhængige variabel er jeres mål for ny teknologi i opgave A
+De forklarende variable er måll for arbejdets organisering
+Block B og C i TASK-spørgeskemaet. Det giver mange muligheder. Argumenter for jeres valg.
+Og formel uddannelse - variablen udgrp (1: <Gym 2:Gym≤, ≤KVU 3: KVU<) . jf. kodebog på moodle.
+Det er ikke (her) nødvendigt med yderligere forklarende variable
+
+```{r}
+task_1 = cbind(task$G1a, task$udgrp) %>%
+  na.omit() %>%
+  as.data.frame()
+colnames(task_1) = c("G1a", "udgrp")
+ny_tek = na.omit(ifelse(task_1$G1a == 1, 1, 0))
+gym = na.omit(ifelse(task_1$udgrp == 2, 1, 0))
+mvu = na.omit(ifelse(task_1$udgrp == 3, 1, 0))
+
+reg = lm(ny_tek ~ as.factor(gym) + as.factor(mvu))
+summary(lm(ny_tek ~ gym + mvu))
+summary(reg)
+```
+
