@@ -1,0 +1,222 @@
+---
+title: "Opgave 2 - Lektion 4-6"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+library(viridis)
+library(zoo)
+library(stringr)
+library(ggrepel)
+library(foreign)
+library(AER)
+library(lmtest)
+library(sandwich)
+library(texreg)
+library(tseries)
+library(timeSeries)
+library(stats)
+library(xts)
+library(mFilter)
+library(urca)
+library(forecast)
+library(strucchange)
+library(Quandl)
+library(tstools)
+library(dynlm)
+library(usmap)
+options(digits = 8)
+options(scipen = 999)
+rm(list=ls())
+```
+
+```{r}
+geodat = read.csv("00_data_analysis.csv")
+```
+
+```{r}
+stater.18 = geodat %>%
+  dplyr::filter(county == 0 & region == 0 & year == 2018) %>%
+  mutate(value = case_when(is.na(value)~0, TRUE~value))
+
+stater.18 <- stater.18 %>%
+  mutate(L=sum(value)) %>%
+  group_by(geo_name) %>%
+  mutate(L.a=sum(value)) %>%
+  ungroup() %>%
+  group_by(description) %>% 
+  mutate(L.b=sum(value)) %>%
+  ungroup() %>%
+  mutate(rca=value*L/(L.a*L.b)) %>%
+  select(-line_code,-region,-county,-industry_classification) %>%
+  glimpse()
+
+stater.18 %>%
+  dplyr::filter(description == "Farm employment") %>%
+  ggplot(aes(x=rca)) +
+  geom_histogram() +
+  theme_classic()
+
+stater.18 %>%
+  dplyr::filter(description == "Farm employment") %>%
+  ggplot(aes(x=rca)) +
+  geom_density() +
+  theme_classic()
+
+stat_dat <- us_map(regions = "states")
+
+# Lim analysen p� kortet (full er geo_name i kortdata)
+dat_map <- left_join(stat_dat,stater.18, by = c("full"="geo_name"))
+
+
+plot_usmap(color = "white",
+  linewidth = 0.1,
+  regions = "states",
+  data = dplyr::filter(dat_map, description == "Farm employment"),
+  values = "rca")
+```
+
+```{r}
+stater.02 = geodat %>%
+  dplyr::filter(county == 0 & region == 0 & year == 2002) %>%
+  mutate(value = case_when(is.na(value)~0, TRUE~value))
+
+stater.02 <- stater.02 %>%
+  mutate(L=sum(value)) %>%
+  group_by(geo_name) %>%
+  mutate(L.a=sum(value)) %>%
+  ungroup() %>%
+  group_by(description) %>% 
+  mutate(L.b=sum(value)) %>%
+  ungroup() %>%
+  mutate(rca=value*L/(L.a*L.b)) %>%
+  select(-line_code,-region,-county,-industry_classification) %>%
+  glimpse()
+
+stater.02 %>%
+  dplyr::filter(description == "Farm employment") %>%
+  ggplot(aes(x=rca)) +
+  geom_histogram() +
+  theme_classic()
+
+stater.02 %>%
+  dplyr::filter(description == "Farm employment") %>%
+  ggplot(aes(x=rca)) +
+  geom_density() +
+  theme_classic()
+
+stat_dat <- us_map(regions = "states")
+
+# Lim analysen p� kortet (full er geo_name i kortdata)
+dat_map <- left_join(stat_dat,stater.02, by = c("full"="geo_name"))
+
+
+# print kortet
+plot_usmap(color = "white",
+  linewidth = 0.1,
+  regions = "states",
+  data = dplyr::filter(dat_map, description == "Farm employment"),
+  values = "rca")
+```
+
+
+# FOR COUNTIES
+```{r}
+counties.18 = geodat %>%
+  dplyr::filter(county == 1 & region == 0 & year == 2018) %>%
+  mutate(value = case_when(is.na(value)~0, TRUE~value))
+
+counties.18 <- counties.18 %>%
+  mutate(L=sum(value)) %>%
+  group_by(geo_name) %>%
+  mutate(L.a=sum(value)) %>%
+  ungroup() %>%
+  group_by(description) %>% 
+  mutate(L.b=sum(value)) %>%
+  ungroup() %>%
+  mutate(rca=value*L/(L.a*L.b)) %>%
+  select(-line_code,-region,-county,-industry_classification) %>%
+  glimpse()
+
+counties.18 %>%
+  dplyr::filter(description == "Farm employment") %>%
+  ggplot(aes(x=rca)) +
+  geom_histogram() +
+  theme_classic()
+
+counties.18 %>%
+  dplyr::filter(description == "Farm employment") %>%
+  ggplot(aes(x=rca)) +
+  geom_density() +
+  theme_classic()
+
+stat_dat <- us_map(regions = "counties")
+
+counties.18$geo_fips =  sprintf("%05d", counties.18$geo_fips)
+
+# Lim analysen p� kortet (full er geo_name i kortdata)
+dat_map <- left_join(stat_dat, counties.18, by = c("fips"="geo_fips"))
+
+
+plot_usmap(color = "white",
+  linewidth = 0.1,
+  regions = "counties",
+  data = dplyr::filter(dat_map, description == "Farm employment"),
+  values = "rca")
+
+data = dplyr::filter(dat_map, description == "Farm employment")
+```
+
+```{r}
+counties.02 = geodat %>%
+  dplyr::filter(county == 1 & region == 0 & year == 2002) %>%
+  mutate(value = case_when(is.na(value)~0, TRUE~value))
+
+counties.02 <- counties.02 %>%
+  mutate(L=sum(value)) %>%
+  group_by(geo_name) %>%
+  mutate(L.a=sum(value)) %>%
+  ungroup() %>%
+  group_by(description) %>% 
+  mutate(L.b=sum(value)) %>%
+  ungroup() %>%
+  mutate(rca=value*L/(L.a*L.b)) %>%
+  select(-line_code,-region,-county,-industry_classification) %>%
+  glimpse()
+
+counties.02 %>%
+  dplyr::filter(description == "Farm employment") %>%
+  ggplot(aes(x=rca)) +
+  geom_histogram() +
+  theme_classic()
+
+counties.02 %>%
+  dplyr::filter(description == "Farm employment") %>%
+  ggplot(aes(x=rca)) +
+  geom_density() +
+  theme_classic()
+
+stat_dat <- us_map(regions = "counties")
+
+counties.02$geo_fips =  sprintf("%05d", counties.02$geo_fips)
+
+# Lim analysen p� kortet (full er geo_name i kortdata)
+dat_map <- left_join(stat_dat, counties.02, by = c("fips"="geo_fips"))
+
+
+plot_usmap(color = "white",
+  linewidth = 0.1,
+  regions = "counties",
+  data = dplyr::filter(dat_map, description == "Farm employment"),
+  values = "rca")
+
+data = dplyr::filter(dat_map, description == "Farm employment")
+```
+
