@@ -76,11 +76,12 @@ stat_dat <- us_map(regions = "states")
 dat_map <- left_join(stat_dat,stater.18, by = c("full"="geo_name"))
 
 
-plot_usmap(color = "white",
+plot_usmap(color = "black",
   linewidth = 0.1,
   regions = "states",
   data = dplyr::filter(dat_map, description == "Farm employment"),
-  values = "rca")
+  values = "rca") + 
+  scale_fill_continuous(low = "white", high = "red", name = "rca", label = scales::comma)
 ```
 
 ```{r}
@@ -119,11 +120,12 @@ dat_map <- left_join(stat_dat,stater.02, by = c("full"="geo_name"))
 
 
 # print kortet
-plot_usmap(color = "white",
+plot_usmap(color = "black",
   linewidth = 0.1,
   regions = "states",
   data = dplyr::filter(dat_map, description == "Farm employment"),
-  values = "rca")
+  values = "rca") + 
+  scale_fill_continuous(low = "white", high = "red", name = "rca", label = scales::comma)
 ```
 
 
@@ -165,11 +167,12 @@ counties.18$geo_fips =  sprintf("%05d", counties.18$geo_fips)
 dat_map <- left_join(stat_dat, counties.18, by = c("fips"="geo_fips"))
 
 
-plot_usmap(color = "white",
+plot_usmap(color = "black",
   linewidth = 0.1,
   regions = "counties",
   data = dplyr::filter(dat_map, description == "Farm employment"),
-  values = "rca")
+  values = "rca") + 
+  scale_fill_continuous(low = "white", high = "red", name = "rca", label = scales::comma)
 
 data = dplyr::filter(dat_map, description == "Farm employment")
 ```
@@ -211,11 +214,13 @@ counties.02$geo_fips =  sprintf("%05d", counties.02$geo_fips)
 dat_map <- left_join(stat_dat, counties.02, by = c("fips"="geo_fips"))
 
 
-plot_usmap(color = "white",
+plot_usmap(color = "black",
   linewidth = 0.1,
   regions = "counties",
   data = dplyr::filter(dat_map, description == "Farm employment"),
-  values = "rca")
+  values = "rca") + 
+  scale_fill_continuous(low = "white", high = "red", name = "rca", label = scales::comma)
+
 
 data = dplyr::filter(dat_map, description == "Farm employment")
 ```
